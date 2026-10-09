@@ -1,0 +1,9 @@
+# Versões mínimas. O projeto foi executado com Python 3.13 e as versões indicadas no README.
+pandas>=2.2
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+statsmodels>=0.14
+matplotlib>=3.8
+joblib>=1.3
+jupyter>=1.0

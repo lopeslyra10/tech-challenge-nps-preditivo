@@ -1,0 +1,16 @@
+# Ambiente virtual e caches
+.venv/
+venv/
+.cache/
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs e arquivos de sistema/editor
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
