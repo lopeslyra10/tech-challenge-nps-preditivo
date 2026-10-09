@@ -1,0 +1,149 @@
+{
+  "data_treino": "2026-10-08",
+  "modelo_escolhido": "Regressão Linear",
+  "variaveis_de_entrada": [
+    "customer_age",
+    "customer_tenure_months",
+    "order_value",
+    "items_quantity",
+    "discount_value",
+    "payment_installments",
+    "delivery_time_days",
+    "delivery_delay_days",
+    "freight_value",
+    "delivery_attempts",
+    "customer_service_contacts",
+    "resolution_time_days",
+    "complaints_count",
+    "customer_region"
+  ],
+  "variaveis_excluidas_por_vazamento": [
+    "csat_internal_score",
+    "repeat_purchase_30d"
+  ],
+  "linhas_treino": 2000,
+  "linhas_teste": 500,
+  "validacao_cruzada_regressao": [
+    {
+      "modelo": "Regressão Linear",
+      "MAE": 1.309,
+      "MAE_desvio": 0.031,
+      "RMSE": 1.648,
+      "R2": 0.565
+    },
+    {
+      "modelo": "Random Forest",
+      "MAE": 1.356,
+      "MAE_desvio": 0.024,
+      "RMSE": 1.696,
+      "R2": 0.54
+    },
+    {
+      "modelo": "Gradient Boosting",
+      "MAE": 1.402,
+      "MAE_desvio": 0.022,
+      "RMSE": 1.766,
+      "R2": 0.501
+    },
+    {
+      "modelo": "Baseline (média)",
+      "MAE": 2.039,
+      "MAE_desvio": 0.026,
+      "RMSE": 2.5,
+      "R2": -0.001
+    }
+  ],
+  "validacao_cruzada_classificacao": [
+    {
+      "modelo": "Regressão Logística",
+      "ROC_AUC": 0.895,
+      "PR_AUC": 0.979,
+      "Acuracia_balanceada": 0.676
+    },
+    {
+      "modelo": "Random Forest",
+      "ROC_AUC": 0.885,
+      "PR_AUC": 0.975,
+      "Acuracia_balanceada": 0.631
+    },
+    {
+      "modelo": "Gradient Boosting",
+      "ROC_AUC": 0.869,
+      "PR_AUC": 0.972,
+      "Acuracia_balanceada": 0.669
+    },
+    {
+      "modelo": "Baseline (proporção)",
+      "ROC_AUC": 0.5,
+      "PR_AUC": 0.843,
+      "Acuracia_balanceada": 0.5
+    }
+  ],
+  "teste_modelo_escolhido": {
+    "MAE": 1.386,
+    "RMSE": 1.78,
+    "R2": 0.511
+  },
+  "teste_baseline_media": {
+    "MAE": 2.105,
+    "RMSE": 2.55,
+    "R2": -0.005
+  },
+  "teste_ordenacao_detratores": {
+    "ROC_AUC": 0.868,
+    "PR_AUC": 0.973
+  },
+  "teste_melhor_classificador": {
+    "modelo": "Regressão Logística",
+    "ROC_AUC": 0.869
+  },
+  "faixas_de_risco_teste": [
+    {
+      "faixa_risco": "Crítico",
+      "pedidos": 106,
+      "nota_real_media": 1.7,
+      "pct_detratores_reais": 100.0,
+      "pct_promotores_reais": 0.0,
+      "pct_pedidos": 21.2
+    },
+    {
+      "faixa_risco": "Alto",
+      "pedidos": 201,
+      "nota_real_media": 3.9,
+      "pct_detratores_reais": 94.0,
+      "pct_promotores_reais": 1.0,
+      "pct_pedidos": 40.2
+    },
+    {
+      "faixa_risco": "Atenção",
+      "pedidos": 157,
+      "nota_real_media": 5.6,
+      "pct_detratores_reais": 73.2,
+      "pct_promotores_reais": 5.7,
+      "pct_pedidos": 31.4
+    },
+    {
+      "faixa_risco": "Potencial promotor",
+      "pedidos": 36,
+      "nota_real_media": 7.6,
+      "pct_detratores_reais": 33.3,
+      "pct_promotores_reais": 30.6,
+      "pct_pedidos": 7.2
+    }
+  ],
+  "impacto_por_unidade": {
+    "delivery_delay_days": -0.955,
+    "complaints_count": -0.374,
+    "customer_service_contacts": -0.328,
+    "resolution_time_days": -0.141,
+    "freight_value": -0.006,
+    "customer_tenure_months": -0.001,
+    "discount_value": -0.0,
+    "customer_age": -0.0,
+    "delivery_time_days": 0.0,
+    "order_value": 0.0,
+    "payment_installments": 0.01,
+    "items_quantity": 0.016,
+    "delivery_attempts": 0.09
+  }
+}
