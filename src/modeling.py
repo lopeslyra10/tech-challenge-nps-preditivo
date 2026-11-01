@@ -27,7 +27,12 @@ from sklearn.metrics import (
     roc_auc_score,
     root_mean_squared_error,
 )
-from sklearn.model_selection import KFold, StratifiedKFold, cross_validate, train_test_split
+from sklearn.model_selection import (
+    KFold,
+    StratifiedKFold,
+    cross_validate,
+    train_test_split,
+)
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
@@ -130,7 +135,10 @@ def regression_candidates() -> dict:
         "Baseline (média)": DummyRegressor(strategy="mean"),
         "Regressão Linear": LinearRegression(),
         "Random Forest": RandomForestRegressor(
-            n_estimators=300, min_samples_leaf=5, random_state=config.RANDOM_STATE, n_jobs=-1
+            n_estimators=300,
+            min_samples_leaf=5,
+            random_state=config.RANDOM_STATE,
+            n_jobs=-1,
         ),
         "Gradient Boosting": HistGradientBoostingRegressor(
             learning_rate=0.05, max_iter=300, random_state=config.RANDOM_STATE
@@ -144,7 +152,10 @@ def classification_candidates() -> dict:
         "Baseline (proporção)": DummyClassifier(strategy="prior"),
         "Regressão Logística": LogisticRegression(max_iter=1000),
         "Random Forest": RandomForestClassifier(
-            n_estimators=300, min_samples_leaf=5, random_state=config.RANDOM_STATE, n_jobs=-1
+            n_estimators=300,
+            min_samples_leaf=5,
+            random_state=config.RANDOM_STATE,
+            n_jobs=-1,
         ),
         "Gradient Boosting": HistGradientBoostingClassifier(
             learning_rate=0.05, max_iter=300, random_state=config.RANDOM_STATE
@@ -157,7 +168,9 @@ def classification_candidates() -> dict:
 # --------------------------------------------------------------------------------------
 def compare_regressors(X_train: pd.DataFrame, y_train: pd.Series) -> pd.DataFrame:
     """Validação cruzada em 5 partes. Métrica principal: MAE (erro médio em pontos de nota)."""
-    folds = KFold(n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_STATE)
+    folds = KFold(
+        n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_STATE
+    )
     scoring = {
         "MAE": "neg_mean_absolute_error",
         "RMSE": "neg_root_mean_squared_error",
@@ -165,7 +178,9 @@ def compare_regressors(X_train: pd.DataFrame, y_train: pd.Series) -> pd.DataFram
     }
     rows = []
     for name, estimator in regression_candidates().items():
-        scores = cross_validate(make_pipeline(estimator), X_train, y_train, cv=folds, scoring=scoring)
+        scores = cross_validate(
+            make_pipeline(estimator), X_train, y_train, cv=folds, scoring=scoring
+        )
         rows.append(
             {
                 "modelo": name,
@@ -178,16 +193,35 @@ def compare_regressors(X_train: pd.DataFrame, y_train: pd.Series) -> pd.DataFram
     return pd.DataFrame(rows).sort_values("MAE").reset_index(drop=True)
 
 
-def compare_classifiers(X_train: pd.DataFrame, y_train_score: pd.Series) -> pd.DataFrame:
+def compare_classifiers(
+    X_train: pd.DataFrame, y_train_score: pd.Series
+) -> pd.DataFrame:
     """Mesma comparação para a abordagem de classificação (alvo: é detrator?)."""
     y_detractor = (y_train_score < config.DETRACTOR_LIMIT).astype(int)
-    folds = StratifiedKFold(n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_STATE)
-    scoring = {"ROC_AUC": "roc_auc", "PR_AUC": "average_precision", "Acuracia_balanceada": "balanced_accuracy"}
+    folds = StratifiedKFold(
+        n_splits=config.CV_FOLDS, shuffle=True, random_state=config.RANDOM_STATE
+    )
+    scoring = {
+        "ROC_AUC": "roc_auc",
+        "PR_AUC": "average_precision",
+        "Acuracia_balanceada": "balanced_accuracy",
+    }
     rows = []
     for name, estimator in classification_candidates().items():
-        scores = cross_validate(make_pipeline(estimator), X_train, y_detractor, cv=folds, scoring=scoring)
-        rows.append({"modelo": name, **{metric: scores[f"test_{metric}"].mean() for metric in scoring}})
-    return pd.DataFrame(rows).sort_values("ROC_AUC", ascending=False).reset_index(drop=True)
+        scores = cross_validate(
+            make_pipeline(estimator), X_train, y_detractor, cv=folds, scoring=scoring
+        )
+        rows.append(
+            {
+                "modelo": name,
+                **{metric: scores[f"test_{metric}"].mean() for metric in scoring},
+            }
+        )
+    return (
+        pd.DataFrame(rows)
+        .sort_values("ROC_AUC", ascending=False)
+        .reset_index(drop=True)
+    )
 
 
 # --------------------------------------------------------------------------------------
@@ -231,7 +265,10 @@ def assign_risk_tier(predicted_scores) -> pd.Series:
     upper_limits = [upper for upper, _, _ in RISK_TIERS]
     positions = np.searchsorted(upper_limits, predicted_scores, side="right")
     names = np.array(RISK_TIER_ORDER)[np.minimum(positions, len(RISK_TIERS) - 1)]
-    return pd.Series(pd.Categorical(names, categories=RISK_TIER_ORDER, ordered=True), name="risk_tier")
+    return pd.Series(
+        pd.Categorical(names, categories=RISK_TIER_ORDER, ordered=True),
+        name="risk_tier",
+    )
 
 
 def recommended_action(risk_tier: pd.Series) -> pd.Series:
@@ -251,8 +288,14 @@ def risk_tier_table(y_true: pd.Series, y_pred: np.ndarray) -> pd.DataFrame:
     summary = table.groupby("faixa_risco", observed=False).agg(
         pedidos=("nota_real", "size"),
         nota_real_media=("nota_real", "mean"),
-        pct_detratores_reais=("nota_real", lambda s: (s < config.DETRACTOR_LIMIT).mean() * 100),
-        pct_promotores_reais=("nota_real", lambda s: (s >= config.PROMOTER_LIMIT).mean() * 100),
+        pct_detratores_reais=(
+            "nota_real",
+            lambda s: (s < config.DETRACTOR_LIMIT).mean() * 100,
+        ),
+        pct_promotores_reais=(
+            "nota_real",
+            lambda s: (s >= config.PROMOTER_LIMIT).mean() * 100,
+        ),
     )
     summary["pct_pedidos"] = summary["pedidos"] / summary["pedidos"].sum() * 100
     return summary.round(1)
@@ -271,9 +314,17 @@ def unit_impacts(model: Pipeline) -> pd.Series | None:
     estimator = model.named_steps["model"]
     if not isinstance(estimator, LinearRegression):
         return None
-    scaler = model.named_steps["preprocessor"].named_transformers_["num"].named_steps["scaler"]
+    scaler = (
+        model.named_steps["preprocessor"]
+        .named_transformers_["num"]
+        .named_steps["scaler"]
+    )
     coefficients = estimator.coef_[: len(config.NUMERIC_FEATURES)]
-    impacts = pd.Series(coefficients / scaler.scale_, index=config.NUMERIC_FEATURES, name="impacto_por_unidade")
+    impacts = pd.Series(
+        coefficients / scaler.scale_,
+        index=config.NUMERIC_FEATURES,
+        name="impacto_por_unidade",
+    )
     return impacts.sort_values()
 
 
@@ -289,7 +340,9 @@ def main_negative_driver(X: pd.DataFrame, impacts: pd.Series | None) -> pd.Serie
     """
     if impacts is None:
         return pd.Series(None, index=X.index, name="main_driver", dtype="object")
-    contributions = X[config.OPERATIONAL_DRIVERS].mul(impacts[config.OPERATIONAL_DRIVERS])
+    contributions = X[config.OPERATIONAL_DRIVERS].mul(
+        impacts[config.OPERATIONAL_DRIVERS]
+    )
     driver_column = contributions.idxmin(axis=1).astype("object")
     no_problem = contributions.min(axis=1) > -MIN_DRIVER_IMPACT
     return driver_column.where(~no_problem, None).rename("main_driver")

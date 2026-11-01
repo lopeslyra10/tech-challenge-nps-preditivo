@@ -1,206 +1,170 @@
-# NPS Preditivo · Tech Challenge Fase 1
+# Previsão de NPS de E-commerce
 
-Projeto do **Tech Challenge da Fase 1** da pós-graduação **AI Scientist (POSTECH)**. Ele investiga
-quais fatores operacionais de um e-commerce definem a satisfação do cliente e propõe um modelo que
-**estima a nota de NPS de cada pedido antes da pesquisa**, para que a empresa aja enquanto ainda dá
-tempo de recuperar o cliente.
+**Tech Challenge · Fase 1 · AI Scientist (POSTECH/FIAP)**
 
-![De cada 100 clientes, 84 são detratores](reports/figures/01_nps_regua.png)
+Projeto unificado de análise de negócio e engenharia de machine learning. A EDA do Projeto A
+permanece como a leitura de negócio principal, agora junto do pipeline modular e do semáforo de
+risco do Projeto B.
 
-## Objetivo
+![Distribuição de categorias NPS: 84,4% de detratores](reports/figures/01_nps_regua.png)
 
-O NPS da empresa só é conhecido depois que a jornada de compra termina. O projeto responde:
+## Contexto e diagnóstico
 
-1. **Quais fatores operacionais realmente influenciam a satisfação do cliente?**
-   (análise exploratória com foco em negócio)
-2. **É possível antecipar a nota de cada cliente antes da pesquisa e transformar isso em ação?**
-   (modelo preditivo, desafio opcional)
+O NPS só é conhecido depois que a jornada de compra termina. Nesse momento, a operação descobre a
+insatisfação tarde demais para corrigir a experiência. A análise da base aponta a logística como
+um sinal prioritário: o tempo total de entrega, por si só, não resume a experiência; o atraso em
+relação à promessa é que acompanha a queda mais acentuada das notas. Atrasos, reclamações, contatos
+com o atendimento e tempo de resolução também apresentam associações negativas com o NPS.
 
-## Principais resultados
+Essa leitura é observacional, não causal. Os resultados servem para priorizar investigação e ações
+piloto, não para afirmar que uma intervenção específica causará aumento de NPS. A base ainda contém
+anomalias que precisam ser confirmadas com a fonte, incluindo `repeat_purchase_30d`, que coincide
+perfeitamente com `nps_score >= 8` e não é uma medida independente de retenção.
 
-- **NPS da base: -80.** 84% de detratores, 11% de neutros e 4% de promotores.
-- **Quatro fatores operacionais explicam a nota:** atraso na entrega, reclamações, contatos com o
-  atendimento e tempo de resolução. **Perfil do cliente e do pedido não fazem diferença** (região,
-  idade, tempo de casa, valor, desconto, frete, parcelas).
-- **O cliente pune a promessa quebrada, não a espera:** prazo total de 4 ou de 14 dias tem o mesmo
-  NPS; o atraso leva a taxa de detratores de 52% a 100%.
-- **Ponto de ruptura no 3º dia de atraso:** daí em diante, 97% a 100% dos clientes são detratores.
-  38,5% dos pedidos já passam desse ponto.
-- **Promotor volta a comprar:** 100% dos promotores recompraram em 30 dias; nenhum detrator voltou.
-- **Modelo:** regressão linear (o modelo de menor erro entre os quatro testados). Erra em média
-  **1,4 ponto** na nota (34% menos que o baseline) e separa detratores com ROC-AUC de 0,87. Na faixa
-  de risco **Crítico**, 100% dos clientes do teste viraram detratores.
-- **Cada dia de atraso custa 0,94 ponto na nota.** Limitar o atraso a 2 dias levaria a nota média
-  prevista de 4,4 para 5,0.
+## Resultados principais
 
-![No terceiro dia de atraso, o cliente satisfeito desaparece](reports/figures/07_ruptura_atraso.png)
+- **NPS da base: −80 pontos**: 2.109 detratores (84,4%), 281 neutros (11,2%) e 110 promotores
+  (4,4%), pela régua oficial definida abaixo.
+- **Sinais operacionais prioritários:** atraso na entrega e reclamações têm as maiores associações
+  negativas observadas com a nota. O perfil do cliente ou do pedido não deve ser tratado como causa
+  sem validação adicional.
+- **Modelo selecionado:** regressão linear, escolhida entre os modelos comparados por validação
+  cruzada. No conjunto de teste, obteve MAE de **1,386 ponto**, contra **2,105** do baseline da
+  média, e ROC-AUC de **0,868** na ordenação de detratores pela nota prevista.
+- **Semáforo de risco:** na faixa **Crítico**, 100% dos pedidos do teste eram de detratores reais.
+  A saída de inferência também aponta o principal fator operacional e uma ação recomendada por
+  pedido.
+- **Impacto estimado:** o modelo associou cada dia adicional de atraso a aproximadamente **−0,955**
+  ponto previsto. É uma associação do modelo, não uma estimativa causal.
 
-Detalhes em [`reports/02_resumo_executivo.md`](reports/02_resumo_executivo.md).
+As métricas e os resultados detalhados estão em [`models/metrics.json`](models/metrics.json) e
+[`reports/02_resumo_executivo.md`](reports/02_resumo_executivo.md).
 
-## Entregáveis
+## Régua de NPS
 
-| Requisito do desafio | Onde está |
+Como `nps_score` é contínua e contém casas decimais, não arredondamos a nota:
+
+| Categoria | Regra |
 |---|---|
-| 1. Entendimento do negócio | [`reports/01_entendimento_negocio_e_target.md`](reports/01_entendimento_negocio_e_target.md) |
-| 2. Definição da target | [`reports/01_entendimento_negocio_e_target.md`](reports/01_entendimento_negocio_e_target.md#2-definição-da-target) |
-| Tratamento e preparação dos dados | [`notebooks/01_tratamento_dados.ipynb`](notebooks/01_tratamento_dados.ipynb) e [`src/data_prep.py`](src/data_prep.py) |
-| 3. Análise exploratória (EDA) | [`notebooks/02_analise_exploratoria.ipynb`](notebooks/02_analise_exploratoria.ipynb) |
-| 4. Modelo preditivo e pipeline | [`notebooks/03_modelo_preditivo.ipynb`](notebooks/03_modelo_preditivo.ipynb), [`src/modeling.py`](src/modeling.py), [`src/train_model.py`](src/train_model.py) e [`src/predict.py`](src/predict.py) |
-| Storytelling e recomendações | [`reports/02_resumo_executivo.md`](reports/02_resumo_executivo.md) |
-| Roteiro dos slides e do vídeo | [`reports/03_roteiro_slides_e_video.md`](reports/03_roteiro_slides_e_video.md) |
-| Apresentação (slides) | _adicionar o link_ |
-| Vídeo executivo | _adicionar o link_ |
+| Detrator | `nps_score < 7` |
+| Neutro | `7 <= nps_score < 9` |
+| Promotor | `nps_score >= 9` |
 
-## Base de dados
+A mesma convenção é usada no notebook, nos scripts, nos gráficos e na avaliação do modelo.
 
-Arquivo `desafio_nps_fase_1.csv`, disponibilizado no
-[repositório do curso](https://github.com/AnaRaquelCafe/POSTECH_AI_SCIENTIST/tree/main/Base%20de%20dados%20Tech%20Challenge)
-e copiado sem alterações para [`data/raw/`](data/raw/). São **2.500 pedidos, um por cliente**, e
-19 colunas:
+## Prevenção de data leakage
 
-| Grupo | Colunas |
-|---|---|
-| Identificação | `customer_id`, `order_id` |
-| Cliente | `customer_age`, `customer_region`, `customer_tenure_months` |
-| Pedido | `order_value`, `items_quantity`, `discount_value`, `payment_installments` |
-| Logística | `delivery_time_days`, `delivery_delay_days`, `freight_value`, `delivery_attempts` |
-| Atendimento | `customer_service_contacts`, `resolution_time_days`, `complaints_count` |
-| Pós-compra | `csat_internal_score`, `repeat_purchase_30d` |
-| **Target** | `nps_score` (0 a 10, coletada após a experiência de compra) |
+`csat_internal_score` é outra medida de satisfação, e `repeat_purchase_30d` só é conhecida depois
+da experiência. Portanto, nenhuma das duas pode ser usada para prever NPS antes da pesquisa. O
+helper `drop_leakage_columns` em [`src/data_prep.py`](src/data_prep.py) retira ambas do conjunto de
+modelagem; [`src/train_model.py`](src/train_model.py) chama essa proteção antes da divisão treino /
+teste e da regressão. A seleção positiva de `MODEL_FEATURES` em `src/config.py` mantém ainda uma
+segunda barreira contra a entrada acidental de outras colunas.
 
-**Qualidade:** sem nulos, sem duplicados e sem valores impossíveis. 405 linhas (16%) têm
-inconsistências entre colunas (ex.: atraso maior que o prazo total). Elas foram **mantidas e
-sinalizadas** com colunas `flag_*`, porque a análise de sensibilidade mostrou que não mudam as
-conclusões.
+Os campos permanecem na base bruta e tratada para auditoria e análise exploratória, mas não chegam
+ao estimador.
 
-A base tratada fica em [`data/processed/nps_tratado.csv`](data/processed/nps_tratado.csv).
+## Dados
 
-## Metodologia
+A base contém **2.500 pedidos e 19 colunas** e foi disponibilizada no
+[repositório de dados do Tech Challenge](https://github.com/AnaRaquelCafe/POSTECH_AI_SCIENTIST/tree/main/Base%20de%20dados%20Tech%20Challenge).
+O arquivo original está em
+[`data/raw/desafio_nps_fase_1.csv`](data/raw/desafio_nps_fase_1.csv); a versão preparada é gerada
+em `data/processed/` pelo script de tratamento.
 
-O projeto segue as etapas do **CRISP-DM**:
+## Estrutura do projeto
 
-```mermaid
-flowchart LR
-    A[Entendimento do negócio<br/>e definição da target] --> B[Entendimento e<br/>tratamento dos dados]
-    B --> C[Análise exploratória<br/>com foco em negócio]
-    C --> D[Modelagem<br/>regressão x classificação]
-    D --> E[Avaliação<br/>teste lacrado]
-    E --> F[Uso prático<br/>semáforo de risco]
-```
-
-1. **Entendimento do negócio e da target:** problema, importância do NPS, áreas beneficiadas,
-   escolha da variável alvo e riscos de uso inadequado.
-2. **Tratamento:** validação do esquema, diagnóstico de qualidade, faixas válidas, regras de
-   consistência entre colunas, limpeza conservadora e análise de sensibilidade.
-3. **EDA com foco em negócio:** correlação de Spearman, taxa de detratores por faixa, pontos de
-   ruptura encontrados com árvore de decisão rasa, testes de Mann-Whitney, qui-quadrado e
-   Kruskal-Wallis. Cada gráfico vem com uma "leitura para a operação" em linguagem simples.
-4. **Modelagem:**
-   - **Target:** `nps_score` (regressão de 0 a 10).
-   - **Entradas:** só o que é conhecido antes da pesquisa. `csat_internal_score` e
-     `repeat_purchase_30d` foram **excluídas por vazamento** (são posteriores à pesquisa ou outra
-     medida de satisfação). Os IDs também ficam de fora.
-   - **Preparação dentro do pipeline:** mediana para nulos, padronização das numéricas e one-hot da
-     região.
-   - **Separação:** 80% treino / 20% teste, estratificada pela categoria NPS. Validação cruzada em
-     5 partes no treino para escolher o modelo; o teste é usado uma única vez.
-   - **Modelos comparados:** baseline, regressão linear, random forest e gradient boosting (e as
-     versões de classificação, como comparação).
-   - **Avaliação:** MAE, RMSE e R² para a nota; ROC-AUC para a capacidade de separar detratores; taxa
-     real de detratores por faixa de risco.
-5. **Uso prático:** a nota prevista vira uma faixa de risco (Crítico, Alto, Atenção, Potencial
-   promotor) com ação recomendada, fator principal e área responsável por pedido.
-
-## Estrutura de pastas
-
-```
+```text
 .
+├── apresentacao/                  # Slides executivos e orientações do vídeo
 ├── data/
-│   ├── raw/                  # base original do desafio (sem alterações)
-│   └── processed/            # base tratada, gerada por src/data_prep.py
+│   ├── raw/                       # CSV original do desafio
+│   └── processed/                 # Base tratada para análise e modelagem
 ├── models/
-│   ├── nps_regressor.joblib  # pipeline treinado (preparação + modelo)
-│   └── metrics.json          # métricas de validação cruzada e de teste
+│   ├── metrics.json               # Métricas do experimento
+│   └── nps_regressor.joblib       # Pipeline treinado
 ├── notebooks/
-│   ├── 01_tratamento_dados.ipynb
-│   ├── 02_analise_exploratoria.ipynb
-│   └── 03_modelo_preditivo.ipynb
+│   ├── 01_eda_negocio.ipynb       # EDA e diagnóstico de negócio (Projeto A)
+│   └── 03_modelo_preditivo.ipynb  # Comparação e avaliação do modelo
 ├── reports/
-│   ├── figures/              # gráficos usados nos notebooks e nos slides
+│   ├── figures/                   # Figuras para análise e apresentação
 │   ├── 01_entendimento_negocio_e_target.md
 │   ├── 02_resumo_executivo.md
 │   ├── 03_roteiro_slides_e_video.md
-│   └── pedidos_priorizados.csv   # exemplo de saída do modelo
+│   └── pedidos_priorizados.csv    # Exemplo de saída do semáforo
 ├── src/
-│   ├── config.py             # caminhos, grupos de colunas e regras do NPS
-│   ├── data_prep.py          # tratamento e preparação
-│   ├── visualization.py      # padrão visual dos gráficos
-│   ├── modeling.py           # pipelines, comparação, avaliação e faixas de risco
-│   ├── train_model.py        # pipeline de treino (gera models/)
-│   └── predict.py            # aplica o modelo e gera a lista priorizada
+│   ├── config.py                  # Caminhos, esquema e régua de NPS
+│   ├── data_prep.py               # Validação, limpeza e prevenção de leakage
+│   ├── modeling.py                # Pipelines, métricas e faixas de risco
+│   ├── predict.py                 # Priorização de pedidos
+│   ├── train_model.py             # Treinamento e avaliação
+│   └── visualization.py           # Padrão visual dos gráficos
 ├── requirements.txt
 └── README.md
 ```
 
 ## Como reproduzir
 
-Requisitos: **Python 3.10 ou superior** e Git.
+Requisitos: Python 3.10 ou superior.
 
 ```bash
-git clone https://github.com/lopeslyra10/tech-challenge-nps-preditivo.git
-cd tech-challenge-nps-preditivo
 python -m venv .venv
 ```
 
-Ative o ambiente virtual:
+Ative o ambiente virtual e instale as dependências:
 
 ```bash
-# Windows (PowerShell)
-.venv\Scripts\Activate.ps1
-# Linux / macOS
+# Linux/macOS
 source .venv/bin/activate
+
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+pip install -r requirements.txt
 ```
 
-Instale as dependências e rode o pipeline completo:
+Execute o pipeline na ordem:
 
 ```bash
-pip install -r requirements.txt
-python -m src.data_prep      # 1. trata a base e grava data/processed/nps_tratado.csv
-python -m src.train_model    # 2. compara modelos, avalia no teste e grava models/
-python -m src.predict        # 3. gera reports/pedidos_priorizados.csv
+python -m src.data_prep
+python -m src.train_model
+python -m src.predict
 ```
 
-Para pontuar outro arquivo de pedidos (mesmas colunas da base; a nota de NPS não é necessária):
+O treino compara regressão e classificação usando validação cruzada no conjunto de treino, avalia
+uma única vez no teste e salva o estimador final e suas métricas em `models/`. A inferência padrão
+prioriza a base original. Para pontuar outro arquivo CSV, que deve conter as variáveis de entrada
+configuradas e não precisa conter a nota NPS:
 
 ```bash
 python -m src.predict --input caminho/pedidos.csv --output caminho/saida.csv
 ```
 
-Para explorar a análise passo a passo, abra os notebooks na ordem (01, 02 e 03):
+Para abrir os notebooks:
 
 ```bash
 jupyter notebook notebooks/
 ```
 
-Os notebooks e os scripts usam as mesmas funções de `src/` e a mesma semente aleatória (`42`),
-então os resultados são sempre os mesmos. Versões usadas na execução publicada: Python 3.13,
-pandas 3.0, numpy 2.5, scikit-learn 1.9, statsmodels 0.15, scipy 1.18 e matplotlib 3.11.
+Os dois notebooks foram mantidos por cobrirem tarefas distintas: a EDA responde às questões de
+negócio e o notebook preditivo explica e avalia o modelo. O tratamento e as demais análises
+exploratórias são reproduzíveis pelos módulos `src/data_prep.py` e `src/visualization.py`; não
+precisam de notebooks separados. A EDA usa os nomes canônicos da base e a régua oficial dos scripts.
 
-## Limitações
+## Limitações e uso responsável
 
-- A base tem sinais de dados simulados (variáveis sem correlação entre si e distribuições
-  uniformes). As conclusões precisam ser revalidadas com dados reais.
-- Não há data nem histórico do cliente, então não é possível fazer validação temporal.
-- O modelo explica cerca de metade da variação da nota (R² 0,51 no teste) e identifica mal os
-  promotores. Por isso o uso recomendado é por faixas de risco.
-- Associação não é causa: os ganhos estimados na simulação devem ser confirmados com teste A/B.
-- O modelo **não** deve ser usado para decidir quem recebe a pesquisa de NPS.
+- A base apresenta padrões incompatíveis com algumas interpretações operacionais. A recompra em
+  30 dias, por exemplo, coincide com uma regra baseada no NPS; confirme a origem antes de usá-la
+  como resultado de retenção.
+- A EDA e os coeficientes do modelo descrevem associações. Uma decisão operacional ou estimativa de
+  ROI exige validação com dados reais e, quando aplicável, um piloto controlado.
+- Não há dimensão temporal suficiente para validação temporal nem para medir sazonalidade.
+- O semáforo é apoio à priorização e não deve determinar quem recebe a pesquisa de NPS ou substituir
+  a análise da equipe responsável pelo atendimento.
 
-## Integrantes
+## Apresentação
 
-| Nome | RM |
-|---|---|
-| Abiodun Victor Bamiro | RM378590 |
-| Augusto Lopes Lyra | RM377121 |
-| Roberto de Assis Marquini | RM378600 |
-| Vinícius Caetano de Assis | RM378521 |
+Os slides estão disponíveis em [PowerPoint](<apresentacao/Estratégia Proativa de NPS.pptx>) e
+[PDF](<apresentacao/Estratégia Proativa de NPS.pdf>). A pasta
+[`apresentacao/video/`](apresentacao/video/) contém as orientações para gravar o vídeo; o arquivo
+do vídeo final ainda não está incluído neste repositório.

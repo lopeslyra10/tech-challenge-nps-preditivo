@@ -22,7 +22,7 @@ from sklearn.dummy import DummyRegressor
 from sklearn.metrics import roc_auc_score
 
 from src import config
-from src.data_prep import load_processed_data
+from src.data_prep import drop_leakage_columns, load_processed_data
 from src.modeling import (
     classification_candidates,
     compare_classifiers,
@@ -41,7 +41,7 @@ from src.modeling import (
 
 def run_training(save: bool = True) -> dict:
     """Executa o pipeline completo e devolve tudo que foi calculado."""
-    df = load_processed_data()
+    df = drop_leakage_columns(load_processed_data())
     train_df, test_df = split_train_test(df)
     X_train, y_train = get_features_and_target(train_df)
     X_test, y_test = get_features_and_target(test_df)
@@ -51,7 +51,9 @@ def run_training(save: bool = True) -> dict:
     classification_cv = compare_classifiers(X_train, y_train)
 
     best_regressor_name = regression_cv.loc[0, "modelo"]
-    model = make_pipeline(regression_candidates()[best_regressor_name]).fit(X_train, y_train)
+    model = make_pipeline(regression_candidates()[best_regressor_name]).fit(
+        X_train, y_train
+    )
 
     # Avaliação final no teste
     y_pred = predict_nps(model, X_test)
@@ -65,13 +67,16 @@ def run_training(save: bool = True) -> dict:
         X_train, (y_train < config.DETRACTOR_LIMIT).astype(int)
     )
     classifier_auc = roc_auc_score(
-        (y_test < config.DETRACTOR_LIMIT).astype(int), classifier.predict_proba(X_test)[:, 1]
+        (y_test < config.DETRACTOR_LIMIT).astype(int),
+        classifier.predict_proba(X_test)[:, 1],
     )
 
     # Modelo final: mesmo algoritmo, re-treinado com toda a base para uso em produção.
     # As métricas reportadas continuam sendo as do teste, que o modelo avaliado não viu.
     X_all, y_all = get_features_and_target(df)
-    final_model = make_pipeline(regression_candidates()[best_regressor_name]).fit(X_all, y_all)
+    final_model = make_pipeline(regression_candidates()[best_regressor_name]).fit(
+        X_all, y_all
+    )
     impacts = unit_impacts(final_model)
 
     results = {
@@ -82,7 +87,9 @@ def run_training(save: bool = True) -> dict:
         "linhas_treino": len(train_df),
         "linhas_teste": len(test_df),
         "validacao_cruzada_regressao": regression_cv.round(3).to_dict(orient="records"),
-        "validacao_cruzada_classificacao": classification_cv.round(3).to_dict(orient="records"),
+        "validacao_cruzada_classificacao": classification_cv.round(3).to_dict(
+            orient="records"
+        ),
         "teste_modelo_escolhido": regression_metrics(y_test, y_pred),
         "teste_baseline_media": baseline_metrics,
         "teste_ordenacao_detratores": detractor_ranking_metrics(y_test, y_pred),
@@ -90,7 +97,9 @@ def run_training(save: bool = True) -> dict:
             "modelo": best_classifier_name,
             "ROC_AUC": round(float(classifier_auc), 3),
         },
-        "faixas_de_risco_teste": risk_tier_table(y_test, y_pred).reset_index().to_dict(orient="records"),
+        "faixas_de_risco_teste": risk_tier_table(y_test, y_pred)
+        .reset_index()
+        .to_dict(orient="records"),
         "impacto_por_unidade": None if impacts is None else impacts.round(3).to_dict(),
     }
 
@@ -114,6 +123,7 @@ def run_training(save: bool = True) -> dict:
 
 
 def main() -> None:
+    """Treina, avalia e salva o modelo e as métricas."""
     config.use_utf8_output()
     results = run_training(save=True)
 
@@ -121,11 +131,15 @@ def main() -> None:
     print("Validação cruzada (treino) - regressão")
     print(pd.DataFrame(results["validacao_cruzada_regressao"]).to_string(index=False))
     print("\nValidação cruzada (treino) - classificação de detratores")
-    print(pd.DataFrame(results["validacao_cruzada_classificacao"]).to_string(index=False))
+    print(
+        pd.DataFrame(results["validacao_cruzada_classificacao"]).to_string(index=False)
+    )
     print(f"\nModelo escolhido: {results['modelo_escolhido']}")
     print(f"Teste - modelo escolhido: {results['teste_modelo_escolhido']}")
     print(f"Teste - baseline (média): {results['teste_baseline_media']}")
-    print(f"Teste - ordenação de detratores pela nota prevista: {results['teste_ordenacao_detratores']}")
+    print(
+        f"Teste - ordenação de detratores pela nota prevista: {results['teste_ordenacao_detratores']}"
+    )
     print(f"Teste - melhor classificador: {results['teste_melhor_classificador']}")
     print("\nFaixas de risco no teste")
     print(pd.DataFrame(results["faixas_de_risco_teste"]).to_string(index=False))

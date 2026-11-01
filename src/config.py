@@ -37,11 +37,10 @@ CV_FOLDS = 5
 TARGET_COLUMN = "nps_score"
 NPS_MIN, NPS_MAX = 0.0, 10.0
 
-# A base traz notas com uma casa decimal (ex.: 6.9). Mantemos a regra clássica
-# (0-6 detrator, 7-8 neutro, 9-10 promotor) lendo a parte inteira da nota:
-# 6.9 ainda é "6 e pouco", portanto detrator.
+# A nota é contínua: < 7 é detrator, de 7 a < 9 é neutro e >= 9 é promotor.
+# Assim, 6.9 continua sendo detrator, sem arredondar a nota.
 DETRACTOR_LIMIT = 7.0  # nota < 7  -> detrator
-PROMOTER_LIMIT = 9.0   # nota >= 9 -> promotor
+PROMOTER_LIMIT = 9.0  # nota >= 9 -> promotor
 NPS_CATEGORY_ORDER = ["detrator", "neutro", "promotor"]
 
 # --------------------------------------------------------------------------------------
@@ -49,9 +48,23 @@ NPS_CATEGORY_ORDER = ["detrator", "neutro", "promotor"]
 # --------------------------------------------------------------------------------------
 ID_COLUMNS = ["customer_id", "order_id"]
 CUSTOMER_COLUMNS = ["customer_age", "customer_region", "customer_tenure_months"]
-ORDER_COLUMNS = ["order_value", "items_quantity", "discount_value", "payment_installments"]
-LOGISTICS_COLUMNS = ["delivery_time_days", "delivery_delay_days", "freight_value", "delivery_attempts"]
-SERVICE_COLUMNS = ["customer_service_contacts", "resolution_time_days", "complaints_count"]
+ORDER_COLUMNS = [
+    "order_value",
+    "items_quantity",
+    "discount_value",
+    "payment_installments",
+]
+LOGISTICS_COLUMNS = [
+    "delivery_time_days",
+    "delivery_delay_days",
+    "freight_value",
+    "delivery_attempts",
+]
+SERVICE_COLUMNS = [
+    "customer_service_contacts",
+    "resolution_time_days",
+    "complaints_count",
+]
 
 # Colunas que NÃO podem entrar no modelo porque nascem junto ou depois da própria
 # pesquisa de NPS (vazamento de informação):

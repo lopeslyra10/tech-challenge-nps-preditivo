@@ -55,7 +55,8 @@ CONSISTENCY_RULES = {
     ),
     "flag_tenure_exceeds_adult_life": (
         "Tempo de casa maior que a vida adulta do cliente",
-        lambda df: df["customer_tenure_months"] > (df["customer_age"] - 18).clip(lower=0) * 12,
+        lambda df: df["customer_tenure_months"]
+        > (df["customer_age"] - 18).clip(lower=0) * 12,
     ),
 }
 
@@ -63,16 +64,18 @@ CONSISTENCY_RULES = {
 ATTENTION_RULES = {
     "flag_complaint_without_contact": (
         "Reclamação registrada sem contato com o atendimento",
-        lambda df: (df["complaints_count"] > 0) & (df["customer_service_contacts"] == 0),
+        lambda df: (df["complaints_count"] > 0)
+        & (df["customer_service_contacts"] == 0),
     ),
     "flag_resolution_without_contact": (
         "Tempo de resolução registrado sem contato com o atendimento",
-        lambda df: (df["resolution_time_days"] > 0) & (df["customer_service_contacts"] == 0),
+        lambda df: (df["resolution_time_days"] > 0)
+        & (df["customer_service_contacts"] == 0),
     ),
 }
 
 # Faixas usadas na análise exploratória. Os cortes de atraso, reclamações e contatos
-# vieram de uma árvore de decisão rasa (notebook 02), que procura onde a nota muda de patamar.
+# foram definidos a partir dos pontos de mudança observados na análise de negócio.
 RANGE_DEFINITIONS = {
     "delay_range": (
         "delivery_delay_days",
@@ -170,7 +173,10 @@ def find_range_violations(df: pd.DataFrame) -> pd.DataFrame:
 def consistency_summary(df: pd.DataFrame) -> pd.DataFrame:
     """Quantas linhas caem em cada regra de consistência e de atenção."""
     rows = []
-    for rule_type, rules in (("inconsistência", CONSISTENCY_RULES), ("ponto de atenção", ATTENTION_RULES)):
+    for rule_type, rules in (
+        ("inconsistência", CONSISTENCY_RULES),
+        ("ponto de atenção", ATTENTION_RULES),
+    ):
         for flag_name, (description, rule) in rules.items():
             mask = rule(df)
             rows.append(
@@ -199,7 +205,9 @@ def clean_data(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     clean_df = df.copy()
 
     # Padroniza texto da região (espaços extras e caixa)
-    clean_df["customer_region"] = clean_df["customer_region"].astype("string").str.strip().str.title()
+    clean_df["customer_region"] = (
+        clean_df["customer_region"].astype("string").str.strip().str.title()
+    )
 
     # 1) Duplicados: linha inteira repetida e pedido repetido
     before = len(clean_df)
@@ -221,12 +229,16 @@ def clean_data(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
     # 4) Sinaliza inconsistências e pontos de atenção (as linhas permanecem)
     for flag_name, (_, rule) in {**CONSISTENCY_RULES, **ATTENTION_RULES}.items():
         clean_df[flag_name] = rule(clean_df).astype(int)
-    clean_df["has_inconsistency"] = clean_df[list(CONSISTENCY_RULES)].any(axis=1).astype(int)
+    clean_df["has_inconsistency"] = (
+        clean_df[list(CONSISTENCY_RULES)].any(axis=1).astype(int)
+    )
 
     # Nulos nas variáveis de entrada NÃO são preenchidos aqui: o preenchimento fica dentro
     # do pipeline do modelo (SimpleImputer), aprendido só com os dados de treino.
     cleaning_log["linhas_finais"] = len(clean_df)
-    cleaning_log["linhas_sinalizadas_inconsistentes"] = int(clean_df["has_inconsistency"].sum())
+    cleaning_log["linhas_sinalizadas_inconsistentes"] = int(
+        clean_df["has_inconsistency"].sum()
+    )
     return clean_df.reset_index(drop=True), cleaning_log
 
 
@@ -284,10 +296,14 @@ def add_analysis_columns(df: pd.DataFrame) -> pd.DataFrame:
     enriched["is_promoter"] = (enriched["nps_category"] == "promotor").astype(int)
     enriched["on_time"] = (enriched["delivery_delay_days"] == 0).astype(int)
     enriched["net_order_value"] = enriched["order_value"] - enriched["discount_value"]
-    enriched["discount_pct"] = (enriched["discount_value"] / enriched["order_value"] * 100).round(1)
+    enriched["discount_pct"] = (
+        enriched["discount_value"] / enriched["order_value"] * 100
+    ).round(1)
 
     for range_column, (source_column, bins, labels) in RANGE_DEFINITIONS.items():
-        enriched[range_column] = pd.cut(enriched[source_column], bins=bins, labels=labels, ordered=True)
+        enriched[range_column] = pd.cut(
+            enriched[source_column], bins=bins, labels=labels, ordered=True
+        )
 
     enriched["experience_profile"] = classify_experience(enriched)
     return enriched
@@ -300,7 +316,9 @@ def restore_category_order(df: pd.DataFrame) -> pd.DataFrame:
         restored["nps_category"], categories=config.NPS_CATEGORY_ORDER, ordered=True
     )
     for range_column, (_, _, labels) in RANGE_DEFINITIONS.items():
-        restored[range_column] = pd.Categorical(restored[range_column], categories=labels, ordered=True)
+        restored[range_column] = pd.Categorical(
+            restored[range_column], categories=labels, ordered=True
+        )
     restored["experience_profile"] = pd.Categorical(
         restored["experience_profile"], categories=EXPERIENCE_ORDER, ordered=True
     )
@@ -310,6 +328,24 @@ def restore_category_order(df: pd.DataFrame) -> pd.DataFrame:
 def load_processed_data(path=config.DATA_PROCESSED_PATH) -> pd.DataFrame:
     """Lê a base tratada já com as categorias na ordem certa."""
     return restore_category_order(pd.read_csv(path, encoding="utf-8"))
+
+
+def drop_leakage_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove do conjunto de modelagem as variáveis indisponíveis no momento previsto."""
+    leakage_features = set(config.LEAKAGE_COLUMNS)
+    configured_features = set(config.MODEL_FEATURES)
+    overlap = leakage_features & configured_features
+    if overlap:
+        raise ValueError(
+            f"Variáveis com vazamento configuradas como preditoras: {sorted(overlap)}"
+        )
+    missing_columns = leakage_features - set(df.columns)
+    if missing_columns:
+        raise ValueError(
+            "Não foi possível remover variáveis com vazamento ausentes da base: "
+            f"{sorted(missing_columns)}"
+        )
+    return df.drop(columns=config.LEAKAGE_COLUMNS)
 
 
 # --------------------------------------------------------------------------------------
@@ -329,6 +365,7 @@ def run_data_preparation(save: bool = True) -> tuple[pd.DataFrame, dict]:
 
 
 def main() -> None:
+    """Executa a preparação da base pela linha de comando."""
     config.use_utf8_output()
     processed_df, cleaning_log = run_data_preparation(save=True)
 
@@ -336,7 +373,9 @@ def main() -> None:
     for step, value in cleaning_log.items():
         print(f"  {step}: {value}")
     print(f"  NPS da base: {nps_index(processed_df[config.TARGET_COLUMN])}")
-    print(f"  Base tratada salva em: {config.DATA_PROCESSED_PATH.relative_to(config.PROJECT_ROOT)}")
+    print(
+        f"  Base tratada salva em: {config.DATA_PROCESSED_PATH.relative_to(config.PROJECT_ROOT)}"
+    )
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 # Etapas 1 e 2 · Entendimento do negócio e definição da target
 
 Este documento responde às duas primeiras etapas do desafio, que pedem **pensamento analítico e
-entendimento conceitual**, não código. Os números citados vêm da análise dos notebooks
-[`02_analise_exploratoria`](../notebooks/02_analise_exploratoria.ipynb) e
+entendimento conceitual**, não código. Os números citados vêm da análise exploratória em
+[`01_eda_negocio`](../notebooks/01_eda_negocio.ipynb) e da avaliação em
 [`03_modelo_preditivo`](../notebooks/03_modelo_preditivo.ipynb).
 
 ---
@@ -98,7 +98,8 @@ diferenciais que se sustentam.
 **`nps_score`**: a nota de 0 a 10 que o cliente dá à pergunta "o quanto você recomendaria a
 empresa?". A partir dela derivamos:
 
-- a **categoria NPS** de cada cliente: detrator (0 a 6), neutro (7 a 8) ou promotor (9 a 10);
+- a **categoria NPS** de cada cliente: detrator (`nps_score < 7`), neutro
+  (`7 <= nps_score < 9`) ou promotor (`nps_score >= 9`);
 - o **NPS da empresa** (indicador agregado): % de promotores menos % de detratores, de -100 a +100.
   Na base: **-80**.
 
@@ -141,8 +142,8 @@ Sim, vários:
    irritados costumam responder mais; os indiferentes, menos. A base pode não representar todos os
    clientes.
 3. **Escala da nota.** Na pesquisa clássica a nota é um número inteiro; nesta base 83% das notas têm
-   casa decimal. É preciso confirmar como ela é calculada. A regra de corte (usamos a parte inteira:
-   6,9 ainda é detrator) muda a classificação de clientes que estão na fronteira.
+   casa decimal. É preciso confirmar como ela é calculada. A classificação não arredonda a nota:
+   `nps_score < 7` é detrator, `7 <= nps_score < 9` é neutro e `nps_score >= 9` é promotor.
 4. **Confundir nota individual com o NPS.** O NPS é um indicador de **grupo**. Tirar conclusões a
    partir de grupos pequenos (por exemplo, os 3 pedidos com 8 dias de atraso) leva a erro.
 5. **Manipulação do indicador (lei de Goodhart).** Se o NPS virar meta com bônus, surgem atalhos:
