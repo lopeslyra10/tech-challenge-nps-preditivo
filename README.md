@@ -166,6 +166,8 @@ precisam de notebooks separados. A EDA usa os nomes canônicos da base e a régu
 Os slides estão em [PowerPoint](apresentacao/NPS_Preditivo.pptx) e em
 [PDF](apresentacao/NPS_Preditivo.pdf).
 
+Vídeo executivo: https://youtu.be/keH3YkPmo9w
+
 ## Integrantes
 
 | Nome | RM |
