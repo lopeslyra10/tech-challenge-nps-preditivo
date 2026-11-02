@@ -90,7 +90,6 @@ em `data/processed/` pelo script de tratamento.
 │   ├── figures/                   # Figuras para análise e apresentação
 │   ├── 01_entendimento_negocio_e_target.md
 │   ├── 02_resumo_executivo.md
-│   ├── 03_roteiro_slides_e_video.md
 │   └── pedidos_priorizados.csv    # Exemplo de saída do semáforo
 ├── src/
 │   ├── config.py                  # Caminhos, esquema e régua de NPS
@@ -164,11 +163,8 @@ precisam de notebooks separados. A EDA usa os nomes canônicos da base e a régu
 
 ## Apresentação
 
-Os slides estão em [PowerPoint](apresentacao/NPS_Preditivo.pptx) (editável, com transições e a fala
-de cada slide nas anotações do apresentador) e em [PDF](apresentacao/NPS_Preditivo.pdf). O roteiro do
-vídeo está em [`reports/03_roteiro_slides_e_video.md`](reports/03_roteiro_slides_e_video.md), e a pasta
-[`apresentacao/video/`](apresentacao/video/) recebe o vídeo final, que ainda não está incluído neste
-repositório.
+Os slides estão em [PowerPoint](apresentacao/NPS_Preditivo.pptx) e em
+[PDF](apresentacao/NPS_Preditivo.pdf).
 
 ## Integrantes
 
@@ -181,11 +177,4 @@ repositório.
 
 ## Uso de inteligência artificial
 
-Usamos ferramentas de IA generativa como apoio na documentação e na estruturação do projeto: organização
-do repositório, revisão de textos, estrutura dos relatórios e dos slides e apoio na construção do código.
-As análises, as decisões e as conclusões foram revisadas pelo grupo, que é responsável pelo conteúdo
-entregue.
-
-O uso segue a orientação do Prof. Ariel Velardo no canal da turma (29/10/2026): ferramentas como Claude,
-ChatGPT, Codex ou Claude Code podem ser usadas como apoio no desenvolvimento do Tech Challenge, inclusive
-para organizar o repositório, revisar textos, estruturar o projeto e ajudar na construção dos códigos.
+Utilizamos ferramentas de IA como apoio na documentação e na estruturação do projeto.
