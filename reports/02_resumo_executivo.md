@@ -32,7 +32,8 @@ logística, atendimento e a nota de NPS dada depois da compra.
 5. **O "tipo de cliente" que importa é definido pela experiência, não pelo perfil.** Quem recebeu no
    prazo e não precisou reclamar tem 24% de promotores; quem passou por atraso grande ou muitas
    reclamações tem 0,4%.
-6. **Promotor volta a comprar.** 100% dos promotores recompraram em 30 dias; nenhum detrator voltou.
+6. **O problema é generalizado.** 88,9% dos pedidos chegam atrasados e 99,1% têm ao menos uma
+   reclamação registrada. (A recompra em 30 dias ficou fora: na base ela é igual a `nota >= 8`.)
 
 ## Quanto cada fator pesa na nota
 

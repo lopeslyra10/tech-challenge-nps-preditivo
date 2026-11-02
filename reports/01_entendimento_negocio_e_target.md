@@ -34,8 +34,8 @@ para que a empresa aja antes da pesquisa.**
   lealdade depende quase só da experiência.
 - **O crescimento depende de recompra.** Conquistar um cliente novo (mídia paga, marketplace,
   cupom de primeira compra) custa caro. O lucro vem do cliente que volta, e o NPS é um termômetro
-  antecipado dessa volta. Na base do desafio, **100% dos promotores recompraram em 30 dias, contra
-  nenhum detrator**.
+  antecipado dessa volta. (Na base do desafio a recompra em 30 dias não serve para medir isso: ela
+  é exatamente igual a `nota >= 8`, ou seja, foi derivada da própria nota.)
 - **A reputação é pública.** Avaliações de produto, notas em marketplace, Reclame Aqui e redes
   sociais influenciam a decisão de compra de quem nunca comprou na loja.
 - **É simples e comparável.** Uma pergunta só, entendida por qualquer área, que pode ser comparada
@@ -57,9 +57,10 @@ para que a empresa aja antes da pesquisa.**
 
 ### Reflexão: como o NPS impacta...
 
-**Recompra.** Promotores voltam a comprar e detratores não, e a base mostra isso de forma extrema:
-taxa de recompra em 30 dias de **100% entre promotores, 38% entre neutros e 0% entre detratores**.
-Cada cliente que passa de detrator a promotor é receita recorrente que não precisa de novo
+**Recompra.** Promotores tendem a voltar a comprar e detratores, a ir para a concorrência. A base do
+desafio não permite medir esse efeito: a coluna `repeat_purchase_30d` coincide exatamente com
+`nota >= 8`, então foi derivada da própria nota e não é uma medida independente de retenção. Cada
+cliente que passa de detrator a promotor é receita recorrente que não precisa de novo
 investimento em aquisição. No sentido contrário, um NPS baixo é aviso de perda de clientes antes que
 ela apareça no faturamento.
 
@@ -109,8 +110,8 @@ empresa?". A partir dela derivamos:
   formulado ("alta variabilidade do NPS").
 - Representa o **resultado final da jornada inteira** (compra, entrega e atendimento), e não de uma
   etapa isolada.
-- Tem **ligação comprovada com o comportamento que importa para o negócio**: a recompra (100% dos
-  promotores contra 0% dos detratores).
+- É o indicador que o mercado associa a recompra e indicação. Nesta base essa ligação não pode ser
+  testada, porque a recompra foi derivada da própria nota (`repeat_purchase_30d` = `nota >= 8`).
 
 As alternativas foram descartadas como target:
 
