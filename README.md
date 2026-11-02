@@ -84,6 +84,7 @@ em `data/processed/` pelo script de tratamento.
 │   ├── metrics.json               # Métricas do experimento
 │   └── nps_regressor.joblib       # Pipeline treinado
 ├── notebooks/
+│   ├── 00_tratamento_dados.ipynb  # Tratamento e preparação da base
 │   ├── 01_eda_negocio.ipynb       # EDA e diagnóstico de negócio (Projeto A)
 │   └── 03_modelo_preditivo.ipynb  # Comparação e avaliação do modelo
 ├── reports/
@@ -145,10 +146,10 @@ Para abrir os notebooks:
 jupyter notebook notebooks/
 ```
 
-Os dois notebooks foram mantidos por cobrirem tarefas distintas: a EDA responde às questões de
-negócio e o notebook preditivo explica e avalia o modelo. O tratamento e as demais análises
-exploratórias são reproduzíveis pelos módulos `src/data_prep.py` e `src/visualization.py`; não
-precisam de notebooks separados. A EDA usa os nomes canônicos da base e a régua oficial dos scripts.
+Abra os notebooks na ordem: `00_tratamento_dados` mostra a validação, a limpeza e a preparação da
+base; `01_eda_negocio` responde às questões de negócio; `03_modelo_preditivo` explica e avalia o
+modelo. O tratamento também roda fora do notebook com `python -m src.data_prep`, usando as mesmas
+funções. A EDA usa os nomes canônicos da base e a régua oficial dos scripts.
 
 ## Limitações e uso responsável
 
